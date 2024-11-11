@@ -78,7 +78,7 @@ def plot_neuron_score(domains_data):
 def preprocess_score(domains_data):
     num_layers, num_neurons, num_domains = domains_data.shape
     domains_data = domains_data.reshape(-1, num_domains)
-    domains_data = np.log1p(domains_data)
+    # domains_data = np.log1p(domains_data)
     domains_data = normalize(domains_data, axis=0)
     domains_data = domains_data.reshape(num_layers, num_neurons, num_domains)
     return domains_data
@@ -95,7 +95,7 @@ def main():
     data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = preprocess_score(domains_data)
-    np.save(f'{data_path}/importance_score.npy', domains_data)
+    np.save(f'{data_path}/importance_score(non_log).npy', domains_data)
  
     plot_distribution(domains_data, layer_idx=0)
     plot_neuron_score(domains_data)

@@ -9,7 +9,7 @@ NUM_HIDDEN_LAYERS = 16
 
 
 def gurobi(neurons_score, layer_idx):
-    data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/model_split/results/neuron_grouping.layer{layer_idx}.npz')
+    data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/{NUM_EXPERT}/neuron_grouping.layer{layer_idx}.npz')
     placement = data['placement']   # [num_neurons,]
     chosen_experts = data['chosen_experts']  # [num_domains, num_experts]
     
@@ -48,7 +48,7 @@ def random_dp(neurons_score):
     
 
 def main():
-    domains_data = np.load('/usr/workdir/HeterExpert/Neuron_Importance/score5000/importance_score_reduced.npy')  # [num_layers, num_neurons(512), num_domains]
+    domains_data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score5000/importance_score_reduced_{DFF_HIDDEN_SIZE}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
     for layer_idx in range(NUM_HIDDEN_LAYERS):
         print('-'*15, f'layer={layer_idx}', '-'*15)
         neurons_score = domains_data[layer_idx]

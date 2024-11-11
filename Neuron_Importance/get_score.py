@@ -32,7 +32,7 @@ def main(domain=None):
     random_seed = 42
 
     set_seed(random_seed)
-    model_path = '/usr/workdir/models/llama-3.2-1B'
+    model_path = '/usr/workdir/models/llama3.2-1b'
     model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
     config = AutoConfig.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)

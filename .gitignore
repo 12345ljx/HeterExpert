@@ -169,4 +169,8 @@ domains/*
 *.pdf
 *.pkl
 runs/
+models/*
+!/models/*.py
+models/parts
+
 

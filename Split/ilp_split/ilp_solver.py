@@ -3,19 +3,16 @@ import numpy as np
 from scipy.optimize import minimize
 from gurobipy import Model, GRB, quicksum
 
-random_seed = 42
-random.seed(random_seed)
-np.random.seed(random_seed)
+NUM_MODULES = 512
 
 NUM_DOMAIN = 8
 # DFF_HIDDEN_SIZE = 8192
-NUM_MODULES = 512
 NUM_HIDDEN_LAYERS = 16
 NUM_EXPERT = 16
 NUM_EXPERT_ACT = 8
 
 def gurobi_solver():
-    domains_data = np.load('./score5000/importance_score_reduced.npy')  # [num_layers, num_neurons(512), num_domains]
+    domains_data = np.load(f'./Neuron_Importance/score5000/importance_score_reduced_{NUM_MODULES}(non_log).npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
     for layer_idx in range(NUM_HIDDEN_LAYERS):
         score = domains_data[layer_idx]
         
@@ -34,6 +31,7 @@ def gurobi_solver():
         
         model.addConstrs((quicksum(x[neuron_idx, expert_idx] for expert_idx in range(NUM_EXPERT)) == 1 for neuron_idx in range(NUM_MODULES)), "NeuronPlacement")
         model.addConstrs((quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES)) >= 16 for expert_idx in range(NUM_EXPERT)), "MinimumExpert")
+        # model.addConstrs((quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES)) >= 32 for expert_idx in range(NUM_EXPERT)), "MinimumExpert")
         model.addConstrs((quicksum(y[expert_idx, domain_idx] * quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES))
                                 for expert_idx in range(NUM_EXPERT)) <= sparsity * NUM_MODULES
                         for domain_idx in range(NUM_DOMAIN)), "SparseActivation")
@@ -60,10 +58,14 @@ def gurobi_solver():
                         # print(f"Box {expert_idx} is selected for metric {domain_idx}.")
         
             assert np.sum(placement == -1) == 0
-            np.savez(f'./model_split/results/neuron_grouping.layer{layer_idx}.npz', placement=placement, chosen_experts=chosen_experts)
+            np.savez(f'./Split/ilp_split/raw_data/llama3.2-1b/domains(non_log)/{NUM_EXPERT}/neuron_grouping.layer{layer_idx}.npz', placement=placement, chosen_experts=chosen_experts)
         else:
             print("No optimal solution found.")
     
     
 if __name__ == "__main__":
+    random_seed = 42
+    random.seed(random_seed)
+    np.random.seed(random_seed)
+    
     gurobi_solver()
