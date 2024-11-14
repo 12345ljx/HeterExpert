@@ -2,14 +2,15 @@ import random
 import numpy as np
 
 NUM_DOMAIN = 8
-DFF_HIDDEN_SIZE = 512
+# DFF_HIDDEN_SIZE = 512
+DFF_HIDDEN_SIZE = 128
 NUM_EXPERT = 16
 NUM_EXPERT_ACT = 8
 NUM_HIDDEN_LAYERS = 16
 
 
 def gurobi(neurons_score, layer_idx):
-    data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/{NUM_EXPERT}/neuron_grouping.layer{layer_idx}.npz')
+    data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/llama3.2-1b/domains/k8n16m128/neuron_grouping.layer{layer_idx}.npz')
     placement = data['placement']   # [num_neurons,]
     chosen_experts = data['chosen_experts']  # [num_domains, num_experts]
     

@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 
 
 NUM_DOMAIN = 8
-DFF_HIDDEN_SIZE = 512
+# DFF_HIDDEN_SIZE = 512
+DFF_HIDDEN_SIZE = 128
 NUM_EXPERT = 16
 NUM_EXPERT_ACT = 8
 
@@ -28,12 +29,12 @@ def get_placement(layer_idx, random_split):
     if random_split:
         placement = np.random.randint(0, NUM_EXPERT, size=DFF_HIDDEN_SIZE)
     else:
-        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/{NUM_EXPERT}/neuron_grouping.layer{layer_idx}.npz')
+        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/llama3.2-1b/domains/k8n16m128/neuron_grouping.layer{layer_idx}.npz')
         placement = data['placement']   # [num_neurons,]
     return placement
 
 def main():
-    layer_idx = 5
+    layer_idx = 15
     random_split = False
     placement = get_placement(layer_idx, random_split)
     
@@ -48,9 +49,9 @@ def main():
     experts_size = [len(np.where(placement == expert_idx)[0]) for expert_idx in range(NUM_EXPERT)]
     
     if random_split:
-        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power(random).layer{layer_idx}.pdf"
+        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power/experts_power(random).layer{layer_idx}.pdf"
     else:
-        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power.layer{layer_idx}.pdf"
+        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power/experts_power.layer{layer_idx}.pdf"
         
     show_experts_power(experts_score, experts_size, figure_path)
 

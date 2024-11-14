@@ -23,8 +23,8 @@ def plot_distribution(domains_data, layer_idx):
     colors = plt.cm.plasma(np.linspace(0, 1, num_domains))
     for i in range(num_domains):
         data = domains_data[layer_idx, :, i]
-        # filtered_data = data[data < np.mean(data) + 1 * np.std(data)]  # XXX
-        sns.kdeplot(data, color=colors[i], fill=True, alpha=0.5, label=f'domain{i}')
+        filtered_data = data[data < np.mean(data) + 1 * np.std(data)]  # XXX
+        sns.kdeplot(filtered_data, color=colors[i], fill=True, alpha=0.5, label=f'domain{i}')
     plt.title('Score Distribution')
     plt.xlabel('score')
     plt.ylabel('density')
@@ -78,7 +78,7 @@ def plot_neuron_score(domains_data):
 def preprocess_score(domains_data):
     num_layers, num_neurons, num_domains = domains_data.shape
     domains_data = domains_data.reshape(-1, num_domains)
-    # domains_data = np.log1p(domains_data)
+    domains_data = np.log1p(domains_data)
     domains_data = normalize(domains_data, axis=0)
     domains_data = domains_data.reshape(num_layers, num_neurons, num_domains)
     return domains_data
@@ -95,7 +95,7 @@ def main():
     data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = preprocess_score(domains_data)
-    np.save(f'{data_path}/importance_score(non_log).npy', domains_data)
+    np.save(f'{data_path}/importance_score.npy', domains_data)
  
     plot_distribution(domains_data, layer_idx=0)
     plot_neuron_score(domains_data)

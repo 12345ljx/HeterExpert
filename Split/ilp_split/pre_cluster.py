@@ -7,7 +7,8 @@ from scipy.cluster.hierarchy import linkage, fcluster
 from sklearn.preprocessing import normalize
 from k_means_constrained import KMeansConstrained
 
-NUM_MODULES = 512
+# NUM_MODULES = 512
+NUM_MODULES = 128
 
 def main():
     random_seed = 42
@@ -17,7 +18,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
 
     data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
-    domains_data = np.load(f'{data_path}/importance_score(non_log).npy')  # [num_layers, num_neurons, num_domains]
+    domains_data = np.load(f'{data_path}/importance_score.npy')  # [num_layers, num_neurons, num_domains]
     
     num_layers, num_neurons, num_domains = domains_data.shape
     assert num_neurons % NUM_MODULES == 0
@@ -52,7 +53,7 @@ def main():
             domains_data_reduced[layer][cluster_idx - start_idx] = cluster_scores
         
     # np.save(f'{data_path}/importance_score_reduced.npy', domains_data_reduced)
-    np.savez(f'{data_path}/importance_score_reduced_{NUM_MODULES}(non_log).npz', domains_data_reduced=domains_data_reduced, module2neurons=module2neurons)
+    np.savez(f'{data_path}/importance_score_reduced_{NUM_MODULES}.npz', domains_data_reduced=domains_data_reduced, module2neurons=module2neurons)
 
 if __name__ == '__main__':
     main()
