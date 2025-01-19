@@ -7,6 +7,12 @@ import time
 from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, Callable
+from typing_extensions import override
+
+import importlib.metadata
+import importlib.util
+from packaging import version
+
 import numpy as np
 
 from transformers import Trainer
@@ -14,7 +20,6 @@ from transformers.trainer_utils import EvalPrediction, speed_metrics
 from transformers.utils import logging, is_datasets_available
 from transformers.utils.deprecation import deprecate_kwarg
 from transformers.integrations.deepspeed import is_deepspeed_zero3_enabled
-from transformers.integrations.fsdp import is_fsdp_managed_module
 from transformers.trainer_pt_utils import nested_detach
 from transformers.generation.configuration_utils import GenerationConfig
 
@@ -22,6 +27,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data.dataset import Dataset
 from torch.distributed.fsdp import FullyShardedDataParallel
+
 
 if is_datasets_available():
     import datasets
@@ -40,9 +46,21 @@ if TYPE_CHECKING:
     from transformers.trainer_utils import EvalPrediction, PredictionOutput
     from transformers.training_args import TrainingArguments
     
+    from packaging.version import Version
+    
 from data_preprocess import IGNORE_INDEX
 
 logger = logging.get_logger(__name__)
+
+
+def _get_package_version(name: str) -> "Version":
+    try:
+        return version.parse(importlib.metadata.version(name))
+    except Exception:
+        return version.parse("0.0.0")
+    
+def is_transformers_version_equal_to_4_46():
+    return version.parse("4.46.0") <= _get_package_version("transformers") <= version.parse("4.46.1")
 
 class ImportanceTrainerMixin:
     def evaluate(
@@ -234,17 +252,14 @@ class ImportanceTrainerMixin:
         return (loss, logits, labels)
 
 class Seq2SeqTrainer(ImportanceTrainerMixin, Trainer):
-    @deprecate_kwarg("tokenizer", new_name="processing_class", version="5.0.0", raise_if_both_names=True)
     def __init__(
         self,
         model: Union["PreTrainedModel", nn.Module] = None,
         args: "TrainingArguments" = None,
         data_collator: Optional["DataCollator"] = None,
-        train_dataset: Optional[Union[Dataset, "IterableDataset", "datasets.Dataset"]] = None,
+        train_dataset: Optional[Dataset] = None,
         eval_dataset: Optional[Union[Dataset, Dict[str, Dataset]]] = None,
-        processing_class: Optional[
-            Union["PreTrainedTokenizerBase", "BaseImageProcessor", "FeatureExtractionMixin", "ProcessorMixin"]
-        ] = None,
+        tokenizer: Optional["PreTrainedTokenizerBase"] = None,
         model_init: Optional[Callable[[], "PreTrainedModel"]] = None,
         compute_metrics: Optional[Callable[["EvalPrediction"], Dict]] = None,
         callbacks: Optional[List["TrainerCallback"]] = None,
@@ -257,7 +272,7 @@ class Seq2SeqTrainer(ImportanceTrainerMixin, Trainer):
             data_collator=data_collator,
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
-            processing_class=processing_class,
+            tokenizer=tokenizer,
             model_init=model_init,
             compute_metrics=compute_metrics,
             callbacks=callbacks,
@@ -498,6 +513,18 @@ class Seq2SeqTrainer(ImportanceTrainerMixin, Trainer):
 
 
 class CustomSeq2SeqTrainer(Seq2SeqTrainer):
+    @override
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        loss = super().compute_loss(model, inputs, return_outputs, **kwargs)
+        if is_transformers_version_equal_to_4_46() and not getattr(self, "model_accepts_loss_kwargs", False):
+            # other model should not scale the loss
+            if return_outputs:
+                return (loss[0] / self.args.gradient_accumulation_steps, *loss[1:])
+            else:
+                return loss / self.args.gradient_accumulation_steps
+        return loss
+    
+    @override
     def prediction_step(
         self,
         model: nn.Module,
@@ -510,9 +537,10 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
 
         Subclass and override to inject custom behavior.
         """
-        labels = inputs["labels"].detach().clone() if "labels" in inputs else None  # backup labels
+        labels = inputs["labels"] if "labels" in inputs else None
         if self.args.predict_with_generate:
             assert self.tokenizer.padding_side == "left", "This method only accepts left-padded tensor."
+            labels = labels.detach().clone() if labels is not None else None  # backup labels
             prompt_len, label_len = inputs["input_ids"].size(-1), inputs["labels"].size(-1)
             if prompt_len > label_len:
                 inputs["labels"] = self._pad_tensors_to_target_len(inputs["labels"], inputs["input_ids"])
@@ -537,7 +565,7 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
         padded_tensor[:, -src_tensor.shape[-1] :] = src_tensor  # adopt left-padding
         return padded_tensor.contiguous()  # in contiguous memory
 
-    def save_predictions(self, predict_results: "PredictionOutput") -> None:
+    def save_predictions(self, dataset: "Dataset", predict_results: "PredictionOutput") -> None:
         r"""
         Saves model predictions to `output_dir`.
 
@@ -559,17 +587,15 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
         for i in range(len(preds)):
             pad_len = np.nonzero(preds[i] != self.tokenizer.pad_token_id)[0]
             if len(pad_len):
-                preds[i] = np.concatenate(
-                    (preds[i][pad_len[0] :], preds[i][: pad_len[0]]), axis=-1
-                )  # move pad token to last
+                preds[i] = np.concatenate((preds[i][pad_len[0] :], preds[i][: pad_len[0]]), axis=-1)
 
-        decoded_labels = self.tokenizer.batch_decode(
-            labels, skip_special_tokens=True, clean_up_tokenization_spaces=False
-        )
-        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        decoded_inputs = self.tokenizer.batch_decode(dataset["input_ids"], skip_special_tokens=True)
+        decoded_labels = self.tokenizer.batch_decode(labels, skip_special_tokens=True)
+        decoded_preds = self.tokenizer.batch_decode(preds, skip_special_tokens=True)
 
         with open(output_prediction_file, "w", encoding="utf-8") as writer:
             res: List[str] = []
-            for label, pred in zip(decoded_labels, decoded_preds):
-                res.append(json.dumps({"label": label, "predict": pred}, ensure_ascii=False))
+            for text, label, pred in zip(decoded_inputs, decoded_labels, decoded_preds):
+                res.append(json.dumps({"prompt": text, "label": label, "predict": pred}, ensure_ascii=False))
+
             writer.write("\n".join(res))

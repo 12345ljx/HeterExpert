@@ -5,11 +5,18 @@ from datasets import Dataset
 
 IGNORE_INDEX = -100
 
-def infer_max_len(source_len: int, target_len: int, max_len: int, reserved_label_len: int) -> Tuple[int, int]:
-    max_target_len = int(max_len * (target_len / (source_len + target_len)))
-    max_target_len = max(max_target_len, reserved_label_len)
-    max_source_len = max_len - max_target_len
-    return max_source_len, max_target_len
+def infer_max_len(source_len: int, target_len: int, cutoff_len: int) -> Tuple[int, int]:
+    if target_len * 2 < cutoff_len:  # truncate source
+        max_target_len = cutoff_len
+    elif source_len * 2 < cutoff_len:  # truncate target
+        max_target_len = cutoff_len - source_len
+    else:  # truncate both
+        max_target_len = int(cutoff_len * (target_len / (source_len + target_len)))
+
+    new_target_len = min(max_target_len, target_len)
+    max_source_len = max(cutoff_len - new_target_len, 0)
+    new_source_len = min(max_source_len, source_len)
+    return new_source_len, new_target_len
 
 class DataProcessor:
     def __init__(self, dataset: Dataset, tokenizer, max_len=1024):
@@ -50,14 +57,12 @@ class DataProcessor:
     def _make_pairs(
             self,
             encoded_messages: Sequence[list[int]],
-            cutoff_len: int,
-            reserved_label_len: int,
+            cutoff_len: int
         ) -> Sequence[Tuple[list[int], list[int]]]:
             max_source_len, max_target_len = infer_max_len(
                 source_len=len(encoded_messages[0]),
                 target_len=len(encoded_messages[1]),
-                max_len=cutoff_len,
-                reserved_label_len=reserved_label_len,
+                cutoff_len=cutoff_len
             )
             source_ids = encoded_messages[0][:max_source_len]
             target_ids = encoded_messages[1][:max_target_len]
@@ -69,7 +74,6 @@ class DataProcessor:
         examples: dict[str, list[Any]],
         tokenizer: "PreTrainedTokenizer",
         cutoff_len: int,
-        reserved_label_len: int = 1,
     ) -> dict[str, list[list[int]]]:
         model_inputs = {"input_ids": [], "attention_mask": [], "labels": []}
         for i in range(len(examples["instruction"])):
@@ -78,7 +82,7 @@ class DataProcessor:
             encoded_messages = []
             for message in messages:
                 encoded_messages.append(self._convert_elements_to_ids(tokenizer, message))
-            source_ids, target_ids = self._make_pairs(encoded_messages, cutoff_len, reserved_label_len)
+            source_ids, target_ids = self._make_pairs(encoded_messages, cutoff_len)
             source_mask = [IGNORE_INDEX] * len(source_ids)
             input_ids += source_ids + target_ids
             labels += source_mask + target_ids

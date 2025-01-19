@@ -2,7 +2,9 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-domains_compose = np.load('/usr/workdir/HeterExpert/domains/domains_compose.npy')
+base_path = '/usr/workdir/HeterExpert/domains/task_type'
+domains_compose = np.load(f'{base_path}/domains_compose.npy')
+domains_num = 8
 
 tasks_list = []
 directory = Path('/usr/workdir/HeterExpert/data')
@@ -11,9 +13,8 @@ for task_path in subdirs:
     task_name = task_path.name.replace('_template', '')
     tasks_list.append(task_name)
 labels = sorted(tasks_list)
-
-domains_num = 8
 tasks_num = len(labels)
+
 
 def show_domains(domains_compose: np.ndarray, labels: list):
     colors = plt.cm.plasma(np.linspace(0, 1, tasks_num))
@@ -33,7 +34,7 @@ def show_domains(domains_compose: np.ndarray, labels: list):
         
     # plt.tight_layout()
 
-    plt.savefig(f"/usr/workdir/HeterExpert/domains/domains_compose.pdf", format='pdf')
+    plt.savefig(f"{base_path}/domains_compose.pdf", format='pdf')
     plt.close()
     
 def show_tasks(domains_compose: np.ndarray, labels: list):
@@ -60,12 +61,12 @@ def show_tasks(domains_compose: np.ndarray, labels: list):
         
     # plt.tight_layout()
 
-    plt.savefig(f"/usr/workdir/HeterExpert/domains/tasks_compose.pdf", format='pdf')
+    plt.savefig(f"{base_path}/tasks_compose.pdf", format='pdf')
     plt.close()
 
 def main():
     show_domains(domains_compose, labels)
-    # show_tasks(domains_compose, labels)
+    show_tasks(domains_compose, labels)
 
 if __name__ == '__main__':
     main()

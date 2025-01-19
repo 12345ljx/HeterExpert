@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -16,11 +17,15 @@ def show_experts_power(experts_score, experts_size, figure_path):
         expert_score = experts_score[expert_idx]
         ax.bar(labels, expert_score)
         ax.set_title(f'Expert {expert_idx} (Neurons: {experts_size[expert_idx]})')
+        
+        y_max = expert_score.max()
+        ax.set_ylim(y_max-0.5, y_max+0.2)
+        
     
     plt.tight_layout()
-    y_max = experts_score.max()
-    for ax in axs.flat:
-        ax.set_ylim(0, y_max)
+    # y_max = experts_score.max()
+    # for ax in axs.flat:
+        # ax.set_ylim(0, y_max)
     
     plt.savefig(figure_path, format='pdf')
     plt.close()
@@ -29,16 +34,16 @@ def get_placement(layer_idx, random_split):
     if random_split:
         placement = np.random.randint(0, NUM_EXPERT, size=DFF_HIDDEN_SIZE)
     else:
-        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/llama3.2-1b/domains/k8n16m128/neuron_grouping.layer{layer_idx}.npz')
+        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/llama3.2-1b/domains(module_stable)/k{NUM_EXPERT_ACT}n{NUM_EXPERT}m{DFF_HIDDEN_SIZE}/neuron_grouping.layer{layer_idx}.npz')
         placement = data['placement']   # [num_neurons,]
     return placement
 
 def main():
-    layer_idx = 15
+    layer_idx = 3
     random_split = False
     placement = get_placement(layer_idx, random_split)
     
-    domains_data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score5000/importance_score_reduced_{DFF_HIDDEN_SIZE}.npz')['domains_data_reduced']  # [num_layers, num_neurons, num_domains]
+    domains_data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score/importance_score_reduced_{DFF_HIDDEN_SIZE}.npz')['domains_data_reduced']  # [num_layers, num_neurons, num_domains]
     score = domains_data[layer_idx]
 
     experts_score = np.zeros((NUM_EXPERT, NUM_DOMAIN))
@@ -48,10 +53,13 @@ def main():
     
     experts_size = [len(np.where(placement == expert_idx)[0]) for expert_idx in range(NUM_EXPERT)]
     
+    output_path = "/usr/workdir/HeterExpert/Split/ilp_split/experts_power/module_stable"
+    os.makedirs(output_path, exist_ok=True)
+    
     if random_split:
-        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power/experts_power(random).layer{layer_idx}.pdf"
+        figure_path = f"{output_path}/experts_power(random).layer{layer_idx}.pdf"
     else:
-        figure_path = f"/usr/workdir/HeterExpert/Split/ilp_split/experts_power/experts_power.layer{layer_idx}.pdf"
+        figure_path = f"{output_path}/experts_power.layer{layer_idx}.pdf"
         
     show_experts_power(experts_score, experts_size, figure_path)
 

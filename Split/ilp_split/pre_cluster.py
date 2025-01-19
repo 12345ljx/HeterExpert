@@ -17,7 +17,7 @@ def main():
     model_path = '/usr/workdir/models/llama3.2-1b'
     model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
 
-    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
+    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score/task_type'
     domains_data = np.load(f'{data_path}/importance_score.npy')  # [num_layers, num_neurons, num_domains]
     
     num_layers, num_neurons, num_domains = domains_data.shape

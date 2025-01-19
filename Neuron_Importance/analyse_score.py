@@ -7,7 +7,11 @@ from sklearn.preprocessing import normalize
 
 
 def read_score(num_layers, num_neurons, num_domains, data_path):
-    domains = [f'domain{i}' for i in range(num_domains)]
+    if 'task_single' in data_path:
+        domains = ['siqa', 'boolq', 'anli', 'hellaswag', 'gsm8k', 'sst2', 'cb', 'winogrande']
+    else:
+        domains = [f'domain{i}' for i in range(num_domains)]
+        
     domains_data = np.zeros((num_layers, num_neurons, num_domains))
     for i, domain in enumerate(domains):
         importance_file = f'{data_path}/{domain}/importance_score.pkl'
@@ -15,6 +19,7 @@ def read_score(num_layers, num_neurons, num_domains, data_path):
             data = np.array(pickle.load(file))
             print(domain, f'max_value: {np.max(data)}', f'min_value: {np.min(data):.2f}', data.shape)
             domains_data[:, :, i] = data
+            
     return domains_data
 
 def plot_distribution(domains_data, layer_idx):
@@ -23,8 +28,8 @@ def plot_distribution(domains_data, layer_idx):
     colors = plt.cm.plasma(np.linspace(0, 1, num_domains))
     for i in range(num_domains):
         data = domains_data[layer_idx, :, i]
-        filtered_data = data[data < np.mean(data) + 1 * np.std(data)]  # XXX
-        sns.kdeplot(filtered_data, color=colors[i], fill=True, alpha=0.5, label=f'domain{i}')
+        # filtered_data = data[data < np.mean(data) + 1 * np.std(data)]  # XXX
+        sns.kdeplot(data, color=colors[i], fill=True, alpha=0.5, label=f'domain{i}')
     plt.title('Score Distribution')
     plt.xlabel('score')
     plt.ylabel('density')
@@ -67,8 +72,8 @@ def plot_neuron_score(domains_data):
         # ax.set_yticklabels(ytick_labels, color="grey", size=12)
         # ax.legend()
         
-    for ax in axs.flat:
-        ax.set_ylim(0, 0.004)
+    # for ax in axs.flat:
+    #     ax.set_ylim(0, 0.004)
 
     plt.title('importance score')
     plt.tight_layout()
@@ -92,7 +97,7 @@ def main():
     dff_hidden_size = 8192
     num_hidden_layers = 16
 
-    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
+    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score/task_type'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = preprocess_score(domains_data)
     np.save(f'{data_path}/importance_score.npy', domains_data)

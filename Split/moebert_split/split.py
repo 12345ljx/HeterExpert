@@ -12,13 +12,13 @@ def main():
     model_name = 'llama3.2-1b'
     function_name = 'domains'
     DOMAIN_NUM = 8
-    NUM_EXPERT = 16
+    NUM_EXPERT = 8
     dff_hidden_size = 8192
     num_hidden_layers = 16
     size_expert = dff_hidden_size // NUM_EXPERT
     num_sharing = size_expert // 2
 
-    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score5000'
+    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = np.sum(domains_data, axis=2)  # [num_layers, num_neurons]
     

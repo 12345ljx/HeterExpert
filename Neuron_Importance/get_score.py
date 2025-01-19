@@ -1,6 +1,8 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 os.environ["WANDB_DISABLED"] = 'true'
+from enum import Enum
+from pathlib import Path
 import torch
 from datasets import load_from_disk
 from transformers import (
@@ -14,31 +16,63 @@ from transformers import (
 )
 
 import sys
-sys.path.append('/usr/workdir/HeterExpert/models')
-from importance_llama import LlamaForCausalLM
-sys.path.append('/usr/workdir/LLaMA-Factory/src/llmtuner/hparams')
+sys.path.append('/usr/workdir/HeterExpert')
+from models.importance_llama import LlamaForCausalLM
+from cluster_plot import read_examples
+sys.path.append('/usr/workdir/LLaMA-Factory/src/llamafactory/hparams')
 from generating_args import GeneratingArguments
 
 from data_preprocess import DataProcessor, IGNORE_INDEX
 from importance_trainer import CustomSeq2SeqTrainer
 
+class DomainType(Enum):
+    Cluster = 1
+    TaskType = 2
+    TaskSingle = 3
 
-def main(domain=None):
-    if domain is None:
-        domain = 'domain7'
-    print(f"Domain: {domain}")
+def load_dataset(task_name: str, domain_type: DomainType, seed):
+    if domain_type == DomainType.Cluster:
+        assert 'domain' in task_name
+        sample_count = 5000
+        dataset = load_from_disk(f'/usr/workdir/HeterExpert/domains/cluster/{task_name}')
+    elif domain_type == DomainType.TaskType:
+        assert 'domain' in task_name
+        sample_count = 5000
+        dataset = load_from_disk(f'/usr/workdir/HeterExpert/domains/task_type/{task_name}')
+    elif domain_type == DomainType.TaskSingle:
+        sample_count = 1000
+        task_path = Path(f'/usr/workdir/HeterExpert/data/{task_name}_template')
+        if not task_path.is_dir():
+            raise FileNotFoundError(f'{task_path} not found')
+        dataset = read_examples(task_path)
+
+    return dataset.shuffle(seed=seed).select(range(sample_count))
+
+def get_output_dir(task_name: str, domain_type: DomainType):
+    if domain_type == DomainType.Cluster:
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{task_name}'
+    elif domain_type == DomainType.TaskType:
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_type/{task_name}'
+    elif domain_type == DomainType.TaskSingle:
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_single/{task_name}'
+        
+    if os.path.exists(output_dir) and os.listdir(output_dir):
+        raise FileExistsError(f'{output_dir} already exists')
     
-    sample_count = 5000
-    random_seed = 42
+    return output_dir
 
+def main(task_name: str, domain_type: DomainType):
+    print(f"task_name: {task_name}, domain_type: {domain_type.name}")
+    random_seed = 42
     set_seed(random_seed)
+    dataset = load_dataset(task_name, domain_type, random_seed)
+    
     model_path = '/usr/workdir/models/llama3.2-1b'
     model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
     config = AutoConfig.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     if not hasattr(tokenizer, 'pad_token') or tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    dataset = load_from_disk(f'/usr/workdir/HeterExpert/domains/{domain}').shuffle(seed=random_seed).select(range(sample_count))
     dataset = DataProcessor(dataset, tokenizer, max_len=3000).dataset
     data_collator = DataCollatorForSeq2Seq(
         tokenizer=tokenizer,
@@ -64,8 +98,9 @@ def main(domain=None):
     #         )
     #     )
     
+    
     training_args = Seq2SeqTrainingArguments(
-        output_dir=f'/usr/workdir/HeterExpert/Neuron_Importance/score5000/{domain}', 
+        output_dir=get_output_dir(task_name, domain_type),
         overwrite_output_dir=True,
         do_train=False, 
         do_eval=True, 
@@ -108,5 +143,6 @@ def main(domain=None):
     
 
 if __name__ == '__main__':
-    domain = sys.argv[1] if len(sys.argv) > 1 else None
-    main(domain)
+    task_name, domain_type = sys.argv[1], DomainType(int(sys.argv[2]))
+    # task_name, domain_type = 'cb', DomainType.TaskSingle
+    main(task_name, domain_type)
