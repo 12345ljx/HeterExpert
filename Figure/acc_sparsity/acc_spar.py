@@ -1,6 +1,10 @@
 from collections import namedtuple
 import matplotlib.pyplot as plt
 
+plt.switch_backend('agg')
+plt.rcParams['pdf.use14corefonts'] = True
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['font.sans-serif'] = ['Helvetica']  # 'Arial' 'Helvetica'
 
 data = {
     'arc_easy': {
@@ -89,21 +93,27 @@ data = {
 }
 
 task_name = 'arc_challenge'
+label = 'ARC-c'
+# task_name = 'piqa'
+# label = 'PIQA'
 
 plt.figure(figsize=(6, 5))
 # plt.plot(data[task_name]['ilp_module']['sparsity'], data[task_name]['ilp_module']['accuracy'], label='ILP(module)', marker='x')
-# plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='ILP(module_stable)', marker='x')
-# plt.plot(data[task_name]['cluster']['sparsity'], data[task_name]['cluster']['accuracy'], label='Cluster', marker='x')
+plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='HEMoE', marker='x')
+plt.plot(data[task_name]['cluster']['sparsity'], data[task_name]['cluster']['accuracy'], label='MoEfication', marker='x')
 
-plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='top_k', marker='x')
-plt.plot(data[task_name]['dynk_max']['sparsity'], data[task_name]['dynk_max']['accuracy'], label='dynk_max', marker='x')
-plt.axhline(y=data[task_name]['original'], color="#1085cd", linestyle="--")
+# plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='top_k', marker='x')
+# plt.plot(data[task_name]['dynk_max']['sparsity'], data[task_name]['dynk_max']['accuracy'], label='dynk_max', marker='x')
+plt.axhline(y=data[task_name]['original'], color="#1085cd", linestyle="--", label='Original')
 
-plt.xlabel('Sparsity')
-plt.ylabel('Accuracy')
+plt.subplots_adjust(left=0.18, right=0.95, bottom=0.15, top=0.90)
+
+plt.tick_params(axis='both', labelsize=16)
+plt.xlabel('Sparsity', fontsize=20)
+plt.ylabel('Performance', fontsize=20)
 # plt.ylim(0.5, 0.8)
 # plt.xlim(0.5, 1.0)
-plt.title(f'{task_name} Sparsity vs Accuracy')
-plt.legend()
+plt.title(f'{label}', fontsize=20)
+plt.legend(fontsize=16)
 plt.savefig(f'/usr/workdir/HeterExpert/Figure/acc_sparsity/Spar_Acc_{task_name}.pdf', format='pdf')
 plt.close()

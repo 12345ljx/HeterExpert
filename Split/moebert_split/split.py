@@ -3,13 +3,13 @@ import numpy as np
 import random
 import sys
 sys.path.append('/usr/workdir/HeterExpert')
-from Neuron_Importance.analyse_score import read_score, preprocess_score
+from Neuron_Importance.process_score import read_score, preprocess_score
 
 def main():
     random_seed = 42
     random.seed(random_seed)
     
-    model_name = 'llama3.2-1b'
+    model_name = 'llama3.2-1b-instruct'
     function_name = 'domains'
     DOMAIN_NUM = 8
     NUM_EXPERT = 8
@@ -18,7 +18,7 @@ def main():
     size_expert = dff_hidden_size // NUM_EXPERT
     num_sharing = size_expert // 2
 
-    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score'
+    data_path = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = np.sum(domains_data, axis=2)  # [num_layers, num_neurons]
     

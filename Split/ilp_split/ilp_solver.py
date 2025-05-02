@@ -10,13 +10,19 @@ NUM_MODULES = 128
 NUM_DOMAIN = 8
 NUM_HIDDEN_LAYERS = 16
 NUM_EXPERT = 8
-NUM_EXPERT_ACT = 4
 
 def gurobi_solver():
-    output_path = f'./Split/ilp_split/raw_data/llama3.2-1b/domains(task_type)/k{NUM_EXPERT_ACT}n{NUM_EXPERT}m{NUM_MODULES}'
+    model_name = "llama3.2-1b"
+    
+    max_min_ratio = 4
+    scaling = pow(max_min_ratio, 0.5)
+    l = 2
+    
+    # output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(module_stable,r{max_min_ratio}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
+    output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(r{max_min_ratio}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
     os.makedirs(output_path, exist_ok=True)
     
-    domains_data = np.load(f'./Neuron_Importance/score/task_type/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
+    domains_data = np.load(f'./Neuron_Importance/score/cluster/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
     for layer_idx in range(NUM_HIDDEN_LAYERS):
         score = domains_data[layer_idx]
         
@@ -24,42 +30,27 @@ def gurobi_solver():
         x = model.addVars(NUM_MODULES, NUM_EXPERT, vtype=GRB.BINARY, name="x")
         y = model.addVars(NUM_EXPERT, NUM_DOMAIN, vtype=GRB.BINARY, name="y")
         
-        def get_var(expert_idx):
-            s = [quicksum(score[neuron_idx, domain_idx] * x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES))
-                       for domain_idx in range(NUM_DOMAIN)]
-            mean = quicksum(s) / NUM_DOMAIN
-            variance = quicksum((a - mean) ** 2 for a in s)
-            return variance
-        
-        gamma = 1.0
-        
         model.setObjective(
             quicksum(y[expert_idx, domain_idx] * quicksum(score[neuron_idx, domain_idx] * x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES))
                     for expert_idx in range(NUM_EXPERT) 
-                    for domain_idx in range(NUM_DOMAIN))
-            # + quicksum(get_var(expert_idx) for expert_idx in range(NUM_EXPERT)) # regularization
-            # - gamma * quicksum(y[expert_idx, domain_idx] for expert_idx in range(NUM_EXPERT) for domain_idx in range(NUM_DOMAIN)) # modularity
-            ,
+                    for domain_idx in range(NUM_DOMAIN)),
             GRB.MAXIMIZE
-            )
+        )
         
-        sparsity = NUM_EXPERT_ACT / NUM_EXPERT
-        min_expert_size = NUM_MODULES // (NUM_EXPERT * 2)
-        max_expert_size = (NUM_MODULES * 2) // NUM_EXPERT
+        
+        avg_expert_size = NUM_MODULES // NUM_EXPERT
+        min_expert_size = max(round(avg_expert_size / scaling), 1)
+        max_expert_size = round(avg_expert_size * scaling)
         
         assert NUM_EXPERT >= NUM_DOMAIN
-        max_expert_num = (NUM_EXPERT // NUM_DOMAIN) * 2
+        avg_expert_num = NUM_EXPERT // NUM_DOMAIN
+        max_expert_num = round(avg_expert_num * l)
         
         model.addConstrs((quicksum(x[neuron_idx, expert_idx] for expert_idx in range(NUM_EXPERT)) == 1 for neuron_idx in range(NUM_MODULES)), "NeuronPlacement")
-        # model.addConstrs((quicksum(y[expert_idx, domain_idx] * quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES))
-        #                         for expert_idx in range(NUM_EXPERT)) <= sparsity * NUM_MODULES
-        #                 for domain_idx in range(NUM_DOMAIN)), "SparseActivation")
         model.addConstrs((quicksum(y[expert_idx, domain_idx] for domain_idx in range(NUM_DOMAIN)) >= 1 for expert_idx in range(NUM_EXPERT)), "Anti-Collapse")
         model.addConstrs((quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES)) >= min_expert_size for expert_idx in range(NUM_EXPERT)), "MinimumExpert")
-        # model.addConstrs((quicksum(y[expert_idx, domain_idx] for expert_idx in range(NUM_EXPERT)) <= NUM_EXPERT_ACT for domain_idx in range(NUM_DOMAIN)), "Coherence")
-        
-        model.addConstrs((quicksum(y[expert_idx, domain_idx] for expert_idx in range(NUM_EXPERT)) <= max_expert_num for domain_idx in range(NUM_DOMAIN)), "Coherence")
         model.addConstrs((quicksum(x[neuron_idx, expert_idx] for neuron_idx in range(NUM_MODULES)) <= max_expert_size for expert_idx in range(NUM_EXPERT)), "MaximumExpert")
+        model.addConstrs((quicksum(y[expert_idx, domain_idx] for expert_idx in range(NUM_EXPERT)) <= max_expert_num for domain_idx in range(NUM_DOMAIN)), "Coherence")
         
         # model.Params.MIPGap = 0.005
         model.Params.TimeLimit = 300

@@ -33,7 +33,7 @@ def analyse_cluster(kmeans: KMeans, sample_count: int, random_seed: int):
         for domain in range(kmeans.n_clusters):
             domains_compose[domain][task_idx] += np.sum(clusters_task == domain)
         
-    np.save('/usr/workdir/HeterExpert/domains/domains_compose.npy', domains_compose)
+    np.save('/usr/workdir/HeterExpert/domains/cluster/domains_compose.npy', domains_compose)
     show_domains(domains_compose, unique_labels)
     
 def merge_domain_data(domains_data):
@@ -101,6 +101,7 @@ def main():
     subdirs = [d for d in directory.iterdir() if d.is_dir()]
     for task_path in tqdm(subdirs):
         task_name = task_path.name.replace('_template', '')
+        if task_name == 'mix_data': continue
         dataset = read_examples(task_path)
         sample_count_task = min(sample_count, len(dataset))
         dataset = dataset.shuffle(seed=random_seed).select(range(sample_count_task))

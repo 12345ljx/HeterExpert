@@ -6,7 +6,10 @@ import random, os
 
 def get_model_info(model_name):
     model_path = f"/usr/workdir/MoEfication/models/{model_name}"
-    if model_name in ("llama-7b", "relu-llama2-7b") :
+    if not os.path.exists(model_path):
+        model_path = f"/usr/workdir/models/{model_name}"
+        
+    if 'llama' in model_name:
         config = AutoConfig.from_pretrained(model_path)
         dff_hidden_size = config.intermediate_size
         layers_number = config.num_hidden_layers
@@ -14,9 +17,6 @@ def get_model_info(model_name):
         config = AutoConfig.from_pretrained(model_path)
         dff_hidden_size = config.d_ff
         layers_number = config.num_hidden_layers
-    elif model_name == "llama3.2-1b" :
-        dff_hidden_size = 8192
-        layers_number = 16
     else:
         raise NotImplementedError
 
@@ -30,7 +30,7 @@ def get_random_split(model_name, layers_number, expert_num, dff_hidden_size):
             experts_split[f'encoder_{layer}'] = np.random.randint(low=0, high=expert_num, size=dff_hidden_size)
         for layer in range(layers_number):
             experts_split[f'decoder_{layer}'] = np.random.randint(low=0, high=expert_num, size=dff_hidden_size)
-    elif model_name in ["relu-llama2-7b", "llama3.2-1b"]:
+    elif 'llama' in model_name:
         for layer in range(layers_number):
             experts_split[f'{layer}'] = np.random.randint(low=0, high=expert_num, size=dff_hidden_size)
     else:
@@ -88,7 +88,7 @@ def main():
     np.random.seed(random_seed)
     random.seed(random_seed)
     
-    model_name = "llama3.2-1b"
+    model_name = "llama3.2-1b-instruct"
     expert_num = 8
     
     dff_hidden_size, layers_number = get_model_info(model_name)

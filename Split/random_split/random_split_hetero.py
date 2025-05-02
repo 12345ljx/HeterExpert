@@ -47,8 +47,8 @@ def main():
     np.random.seed(random_seed)
     random.seed(random_seed)
     
-    model_name = "llama3.2-1b"
-    expert_num = 16
+    model_name = "llama3.2-1b-instruct"
+    expert_num = 8
     
     dff_hidden_size, layers_number = get_model_info(model_name)
     experts_split = get_random_split(model_name, layers_number, expert_num, dff_hidden_size)

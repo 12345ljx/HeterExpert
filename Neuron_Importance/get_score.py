@@ -1,5 +1,5 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 os.environ["WANDB_DISABLED"] = 'true'
 from enum import Enum
 from pathlib import Path
@@ -14,10 +14,12 @@ from transformers import (
     LogitsProcessorList, 
     InfNanRemoveLogitsProcessor
 )
+from accelerate import Accelerator
 
 import sys
 sys.path.append('/usr/workdir/HeterExpert')
 from models.importance_llama import LlamaForCausalLM
+from models.importance_qwen2 import Qwen2ForCausalLM
 from cluster_plot import read_examples
 sys.path.append('/usr/workdir/LLaMA-Factory/src/llamafactory/hparams')
 from generating_args import GeneratingArguments
@@ -35,6 +37,8 @@ def load_dataset(task_name: str, domain_type: DomainType, seed):
         assert 'domain' in task_name
         sample_count = 5000
         dataset = load_from_disk(f'/usr/workdir/HeterExpert/domains/cluster/{task_name}')
+        # sample_count = 3000
+        # dataset = load_from_disk(f'/usr/workdir/HeterExpert/domains/gmm_cluster(dim=128)/{task_name}')
     elif domain_type == DomainType.TaskType:
         assert 'domain' in task_name
         sample_count = 5000
@@ -48,32 +52,44 @@ def load_dataset(task_name: str, domain_type: DomainType, seed):
 
     return dataset.shuffle(seed=seed).select(range(sample_count))
 
-def get_output_dir(task_name: str, domain_type: DomainType):
+def get_output_dir(model_name: str, task_name: str, domain_type: DomainType):
     if domain_type == DomainType.Cluster:
-        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{task_name}'
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}/{task_name}'
+        # output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/gmm_cluster(dim=128)/{model_name}/{task_name}'
     elif domain_type == DomainType.TaskType:
-        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_type/{task_name}'
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_type/{model_name}/{task_name}'
     elif domain_type == DomainType.TaskSingle:
-        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_single/{task_name}'
+        output_dir = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_single/{model_name}/{task_name}'
         
     if os.path.exists(output_dir) and os.listdir(output_dir):
         raise FileExistsError(f'{output_dir} already exists')
     
     return output_dir
 
-def main(task_name: str, domain_type: DomainType):
-    print(f"task_name: {task_name}, domain_type: {domain_type.name}")
+def main(model_name: str, task_name: str, domain_type: DomainType):
+    print(f"model_name: {model_name}, task_name: {task_name}, domain_type: {domain_type.name}")
     random_seed = 42
     set_seed(random_seed)
-    dataset = load_dataset(task_name, domain_type, random_seed)
     
-    model_path = '/usr/workdir/models/llama3.2-1b'
-    model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
+    model_path = f'/usr/workdir/models/{model_name}'
+    if 'llama' in model_name:
+        model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.bfloat16)
+        if model_name in ('llama3.2-1b', 'llama3.2-3b'):
+            template = 'llama3'
+        else:
+            raise NotImplementedError
+    elif 'qwen2' in model_name:
+        model = Qwen2ForCausalLM.from_pretrained(model_path, torch_dtype=torch.bfloat16)
+        template = 'qwen'
+    else:
+        raise NotImplementedError(f'Important model {model_name} not supported')
+    
     config = AutoConfig.from_pretrained(model_path)
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     if not hasattr(tokenizer, 'pad_token') or tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-    dataset = DataProcessor(dataset, tokenizer, max_len=3000).dataset
+    dataset = load_dataset(task_name, domain_type, random_seed)
+    dataset = DataProcessor(dataset, tokenizer, template_name=template, max_len=1024).dataset
     data_collator = DataCollatorForSeq2Seq(
         tokenizer=tokenizer,
         pad_to_multiple_of=8 if tokenizer.padding_side == "right" else None,  # for shift short attention
@@ -81,7 +97,7 @@ def main(task_name: str, domain_type: DomainType):
     )
     
     model.cuda()
-    if config.model_type == "llama":
+    if config.model_type in ["llama", "qwen2"]:
         layer_range = range(config.num_hidden_layers)
         for param in model.parameters():
             param.requires_grad = False
@@ -100,7 +116,7 @@ def main(task_name: str, domain_type: DomainType):
     
     
     training_args = Seq2SeqTrainingArguments(
-        output_dir=get_output_dir(task_name, domain_type),
+        output_dir=get_output_dir(model_name, task_name, domain_type),
         overwrite_output_dir=True,
         do_train=False, 
         do_eval=True, 
@@ -115,6 +131,7 @@ def main(task_name: str, domain_type: DomainType):
         eval_strategy='steps', 
         eval_steps=10,
         save_total_limit=3,
+        # deepspeed='/usr/workdir/HeterExpert/Neuron_Importance/ds_config_zero3.json',
     )
     
     trainer = CustomSeq2SeqTrainer(
@@ -143,6 +160,6 @@ def main(task_name: str, domain_type: DomainType):
     
 
 if __name__ == '__main__':
-    task_name, domain_type = sys.argv[1], DomainType(int(sys.argv[2]))
-    # task_name, domain_type = 'cb', DomainType.TaskSingle
-    main(task_name, domain_type)
+    model_name, task_name, domain_type = sys.argv[1], sys.argv[2], DomainType(int(sys.argv[3]))
+    # model_name, task_name, domain_type = 'llama3.2-1b', 'domain0', DomainType.Cluster
+    main(model_name, task_name, domain_type)
