@@ -6,12 +6,13 @@ from random_split_homo import get_model_info, get_random_split, check_range, wri
 import sys
 sys.path.append('/usr/workdir/MoEfication/moefication')
 from get_labels import read_labels
+from moefication import MoEArgs
 
 def get_ilp_expert_size(model_name, layers_number, expert_num):
-    ilp_base_path = f'/usr/workdir/HeterExpert/Split/model_split/ilp/{model_name}/domains(module_stable)/{expert_num}'
+    ilp_base_path = f'/usr/workdir/HeterExpert/Split/model_split/ilp/{model_name}/domains(r4l2)/{expert_num}'
     experts_size = {}
     for layer_idx in range(layers_number):
-        labels = read_labels(f'{ilp_base_path}/{layer_idx}.part.{expert_num}')
+        labels = MoEArgs.read_labels(f'{ilp_base_path}/{layer_idx}.part.{expert_num}')
         experts_size[layer_idx] = [len(label) for label in labels]
     return experts_size
 
@@ -47,7 +48,7 @@ def main():
     np.random.seed(random_seed)
     random.seed(random_seed)
     
-    model_name = "llama3.2-1b-instruct"
+    model_name = "llama3.2-3b"
     expert_num = 8
     
     dff_hidden_size, layers_number = get_model_info(model_name)

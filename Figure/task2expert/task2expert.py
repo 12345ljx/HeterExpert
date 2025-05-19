@@ -15,8 +15,9 @@ plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['font.sans-serif'] = ['Helvetica']  # 'Arial' 'Helvetica'
 
 def get_data(layer_name='3'):
-    model_name = 'llama3.2-1b'
     moeargs = MoEArgs(
+        model_name='llama3.2-1b',
+        function_name=None,   # XXX
         split_mode='ilp',
         gate_mode='top_k',
         static=False,
@@ -31,7 +32,7 @@ def get_data(layer_name='3'):
     task_list = ['arc_easy', 'arc_challenge', 'piqa', 'openbookqa', 'winogrande', 'sciq', 'siqa']
     task_activation = np.zeros((len(task_list), 8))
     for id, task_name in enumerate(task_list):
-        gate_path = get_gate_path(model_name, task_name, **moeargs.to_dict())
+        gate_path = get_gate_path(task_name=task_name, **moeargs.to_dict())
         selected_experts = dynamic_experts_weights(gate_path, False)
         selected_weight_average = {layer: value['experts_weight'] / value['num_tokens'] for layer, value in selected_experts.items()}
         task_activation[id] += selected_weight_average[layer_name]

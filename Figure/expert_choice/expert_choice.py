@@ -21,15 +21,15 @@ for y in range(9):
     ax.plot([0, 8], [y, y], color='black', lw=1)  
 
 # ax.grid(which='both', color='black', linestyle='-', linewidth=2)
-# check_positions = [(0,5), (1,7), (2,2), (3,1), (4,3), (5,4), (5,6), 
-#                    (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (7,0)]
+check_positions = [(0,5), (1,7), (2,2), (3,1), (4,3), (5,4), (5,6), 
+                   (6,0), (6,1), (6,2), (6,3), (6,4), (6,5), (6,6), (6,7), (7,0)]
 
-check_positions = [(0,2), (1,5), (1,6), (2,3), (3,0), (4,4), (5,7), (6,1),
-                   (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7)]
+# check_positions = [(0,2), (1,5), (1,6), (2,3), (3,0), (4,4), (5,7), (6,1),
+#                    (7,0), (7,1), (7,2), (7,3), (7,4), (7,5), (7,6), (7,7)]
 for pos in check_positions:
     x, y = pos
-    # if x in [0,1,4,5]:
-    if x in [0,4,5]:
+    if x in [0,1,4]:
+    # if x in [0,4,5]:
         color = 'red'
     else:
         color = 'black'
@@ -40,6 +40,6 @@ ax.set_xlabel('Experts', fontsize=20)
 ax.set_ylabel('Domains', fontsize=20)
 
 plt.gca().set_aspect('equal', adjustable='box')
-plt.savefig(f'/usr/workdir/HeterExpert/Figure/expert_choice/expert_choice2.png', bbox_inches='tight', 
-            dpi=300)
+plt.savefig(f'/usr/workdir/HeterExpert/Figure/expert_choice/expert_choice1.png', bbox_inches='tight', dpi=300)
+# plt.savefig(f'/usr/workdir/HeterExpert/Figure/expert_choice/expert_choice1.pdf', bbox_inches='tight', dpi=300)
 plt.close()

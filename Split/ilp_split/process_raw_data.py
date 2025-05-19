@@ -6,7 +6,7 @@ NUM_HIDDEN_LAYERS = 16
 NUM_EXPERT = 8
 
 model_name = 'llama3.2-1b'
-function_name = 'domains(r4l2)'
+function_name = f'domains(task_type,r4l2)'
 
 output_dir = f'/usr/workdir/HeterExpert/Split/model_split/ilp/{model_name}/{function_name}/{NUM_EXPERT}'
 os.makedirs(output_dir, exist_ok=True)

@@ -9,12 +9,12 @@ def main():
     random_seed = 42
     random.seed(random_seed)
     
-    model_name = 'llama3.2-1b-instruct'
+    model_name = 'llama3.2-3b'
     function_name = 'domains'
     DOMAIN_NUM = 8
     NUM_EXPERT = 8
     dff_hidden_size = 8192
-    num_hidden_layers = 16
+    num_hidden_layers = 28
     size_expert = dff_hidden_size // NUM_EXPERT
     num_sharing = size_expert // 2
 

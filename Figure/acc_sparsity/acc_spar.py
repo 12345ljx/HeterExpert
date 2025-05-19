@@ -8,40 +8,24 @@ plt.rcParams['font.sans-serif'] = ['Helvetica']  # 'Arial' 'Helvetica'
 
 data = {
     'arc_easy': {
-        'ilp_module': {
-            "sparsity": [0.57603, 0.62160, 0.66563, 0.71769, 0.75812, 0.80553, 0.85756],
-            "accuracy": [0.41793, 0.43140, 0.45202, 0.49158, 0.50631, 0.53241, 0.56818],
-        },
-        'ilp_module_stable': {
-            "sparsity": [0.57160, 0.61132, 0.65988, 0.70327, 0.76904, 0.79489, 0.89076],
-            "accuracy": [0.40783, 0.42593, 0.45539, 0.48148, 0.50631, 0.52020, 0.58544],
-        },
-        'dynk_max': {
-            "sparsity": [0.58971, 0.61965, 0.65398, 0.69321, 0.85757],
-            "accuracy": [0.41667, 0.41835, 0.42677, 0.45707, 0.52441],
+        'ilp': {
+            "sparsity": [0.56638, 0.60859, 0.66142, 0.70978, 0.75489, 0.80095, 0.88844],
+            "accuracy": [0.43140, 0.45623, 0.50589, 0.53662, 0.56776, 0.59049, 0.64815],
         },
         'cluster': {
             "sparsity": [0.57236, 0.63345, 0.69454, 0.75563, 0.81673, 0.87782, 0.93891],
-            "accuracy": [0.40152, 0.41204, 0.45749, 0.50547, 0.54714, 0.56902, 0.61742],
+            "accuracy": [0.42971, 0.47727, 0.51094, 0.56061, 0.59975, 0.64646, 0.69276],
         },
         'original': 0.60648
     },
     'arc_challenge': {
-        'ilp_module': {
-            "sparsity": [0.56493, 0.61659, 0.66010, 0.69807, 0.75233, 0.80015, 0.84654],
-            "accuracy": [0.25427, 0.27730, 0.27645, 0.29266, 0.31314, 0.31911, 0.343],
-        },
-        'ilp_module_stable': {
-            "sparsity": [0.56816, 0.61129, 0.64989, 0.68815, 0.74299, 0.78900, 0.88964],
-            "accuracy": [0.25000, 0.27048, 0.27645, 0.28413, 0.29437, 0.31570, 0.36177],
-        },
-        'dynk_max': {
-            "sparsity": [0.61721, 0.64377, 0.69795, 0.78548, 0.85137],
-            "accuracy": [0.26365, 0.27133, 0.27816, 0.28328, 0.33191],
+        'ilp': {
+            "sparsity": [0.55806, 0.61621, 0.65204, 0.70309, 0.75407, 0.79248, 0.88767],
+            "accuracy": [0.28328, 0.29352, 0.30973, 0.32850, 0.33447, 0.35239, 0.37799],
         },
         'cluster': {
             "sparsity": [0.57236, 0.63345, 0.69454, 0.75563, 0.81673, 0.87782, 0.93891],
-            "accuracy": [0.25085, 0.26792, 0.27218, 0.29096, 0.30631, 0.34386, 0.35666],
+            "accuracy": [0.27986, 0.28413, 0.30887, 0.33020, 0.34898, 0.36860, 0.40273],
         },
         'original': 0.36348
     },
@@ -99,7 +83,7 @@ label = 'ARC-c'
 
 plt.figure(figsize=(6, 5))
 # plt.plot(data[task_name]['ilp_module']['sparsity'], data[task_name]['ilp_module']['accuracy'], label='ILP(module)', marker='x')
-plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='HEMoE', marker='x')
+plt.plot(data[task_name]['ilp']['sparsity'], data[task_name]['ilp']['accuracy'], label='HEMoE', marker='x')
 plt.plot(data[task_name]['cluster']['sparsity'], data[task_name]['cluster']['accuracy'], label='MoEfication', marker='x')
 
 # plt.plot(data[task_name]['ilp_module_stable']['sparsity'], data[task_name]['ilp_module_stable']['accuracy'], label='top_k', marker='x')

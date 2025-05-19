@@ -14,15 +14,17 @@ NUM_EXPERT = 8
 def gurobi_solver():
     model_name = "llama3.2-1b"
     
-    max_min_ratio = 4
-    scaling = pow(max_min_ratio, 0.5)
+    R = 4  # max_min_ratio
+    scaling = pow(R, 0.5)
     l = 2
+    print(f"model: {model_name}, num_expert: {NUM_EXPERT}, R: {R}, l: {l}")
+        
     
-    # output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(module_stable,r{max_min_ratio}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
-    output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(r{max_min_ratio}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
+    # output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(module_stable,r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
+    output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(task_type,r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
     os.makedirs(output_path, exist_ok=True)
     
-    domains_data = np.load(f'./Neuron_Importance/score/cluster/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
+    domains_data = np.load(f'./Neuron_Importance/score/task_type/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
     for layer_idx in range(NUM_HIDDEN_LAYERS):
         score = domains_data[layer_idx]
         

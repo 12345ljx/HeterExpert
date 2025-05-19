@@ -161,5 +161,5 @@ def main(model_name: str, task_name: str, domain_type: DomainType):
 
 if __name__ == '__main__':
     model_name, task_name, domain_type = sys.argv[1], sys.argv[2], DomainType(int(sys.argv[3]))
-    # model_name, task_name, domain_type = 'llama3.2-1b', 'domain0', DomainType.Cluster
+    # model_name, task_name, domain_type = 'llama3.2-1b', 'domain0', DomainType.TaskType
     main(model_name, task_name, domain_type)

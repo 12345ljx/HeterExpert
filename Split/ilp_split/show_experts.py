@@ -19,6 +19,28 @@ DFF_HIDDEN_SIZE = 128
 NUM_EXPERT = 8
 NUM_EXPERT_ACT = 4
 
+def show_experts_power_paper(experts_score, experts_size, figure_path):
+    labels = ['D{}'.format(i) for i in range(NUM_DOMAIN)]
+    
+    selected_idx = [0, 1, 4]
+    key_expert = [2, 0, 4]
+    
+    fig, axs = plt.subplots(1, 3, figsize=(14, 4.8))
+    for i, ax, expert_idx in zip(range(len(selected_idx)), axs.flat, selected_idx):
+        expert_score = experts_score[expert_idx]
+        bars = ax.bar(labels, expert_score, color='#c5daee')
+        bars[key_expert[i]].set_color('#3383be')
+        ax.set_title(f'E{expert_idx} (module size: {experts_size[expert_idx] * 64})', fontsize=18)
+        
+        y_max = expert_score.max()
+        ax.set_ylim(y_max-0.35, y_max+0.15)
+        ax.tick_params(axis='both', labelsize=15)
+        
+    plt.tight_layout()
+    plt.savefig(figure_path, format='pdf')
+    plt.close()
+
+
 def show_experts_power(experts_score, experts_size, figure_path):
     labels = ['D{}'.format(i) for i in range(NUM_DOMAIN)]
     
@@ -59,7 +81,7 @@ def get_placement(model_name, layer_idx, random_split):
         averate_correction({layer_idx: placement}, average_num)
         print(Counter(placement))
     else:
-        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/{model_name}/domains(r4l2)/n{NUM_EXPERT}m{DFF_HIDDEN_SIZE}/neuron_grouping.layer{layer_idx}.npz')
+        data = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/encode_error/{model_name}/domains(module_stable)/n{NUM_EXPERT}m{DFF_HIDDEN_SIZE}/neuron_grouping.layer{layer_idx}.npz')
         placement = data['placement']   # [num_neurons,]
     return placement
 
@@ -69,7 +91,7 @@ def main():
     random_split = False
     placement = get_placement(model_name, layer_idx, random_split)
     
-    domains_data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}/importance_score_reduced_{DFF_HIDDEN_SIZE}.npz')['domains_data_reduced']  # [num_layers, num_neurons, num_domains]
+    domains_data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score/encode_error/cluster/{model_name}/importance_score_reduced_{DFF_HIDDEN_SIZE}.npz')['domains_data_reduced']  # [num_layers, num_neurons, num_domains]
     score = domains_data[layer_idx]
 
     experts_score = np.zeros((NUM_EXPERT, NUM_DOMAIN))
@@ -87,7 +109,7 @@ def main():
     else:
         figure_path = f"{output_path}/experts_power.layer{layer_idx}.pdf"
         
-    show_experts_power(experts_score, experts_size, figure_path)
+    show_experts_power_paper(experts_score, experts_size, figure_path)
 
 if __name__ == '__main__':
     main()   

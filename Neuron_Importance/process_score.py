@@ -143,14 +143,14 @@ def main():
     # dff_hidden_size, num_hidden_layers = 11008, 32  # relu-llama2-7b
     # dff_hidden_size, num_hidden_layers = 18944, 28  # relu-llama2-7b
 
-    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/llama3.2-1b'
+    data_path = '/usr/workdir/HeterExpert/Neuron_Importance/score/task_type/llama3.2-1b'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = preprocess_score(domains_data)
     print(domains_data.min(), domains_data.max())
-    # np.save(f'{data_path}/importance_score.npy', domains_data)
+    np.save(f'{data_path}/importance_score.npy', domains_data)
  
-    plot_distribution(domains_data, layer_idx=0)
-    plot_neuron_score(domains_data)
+    # plot_distribution(domains_data, layer_idx=0)
+    # plot_neuron_score(domains_data)
     # plot_neuron_score_sub(domains_data)
     
 

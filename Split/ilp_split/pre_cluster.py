@@ -12,8 +12,10 @@ from k_means_constrained import KMeansConstrained
 NUM_MODULES = 128
 
 def get_cluster_result(model_name, layer, n_clusters, size, X, random_seed, write_file=False):
+    base_path = f'/usr/workdir/HeterExpert/Split/ilp_split/cluster_cache/{model_name}'
+    os.makedirs(base_path, exist_ok=True)
     file_name = f'{model_name}_{n_clusters}_layer{layer}.npy'
-    output_path = os.path.join(f'/usr/workdir/HeterExpert/Split/ilp_split/cluster_cache/{model_name}', file_name)
+    output_path = os.path.join(base_path, file_name)
     if os.path.exists(output_path) and not write_file:
         clusters = np.load(output_path)
     else:
@@ -33,7 +35,7 @@ def main():
     model_path = f'/usr/workdir/models/{model_name}'
     model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
 
-    data_path = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}'
+    data_path = f'/usr/workdir/HeterExpert/Neuron_Importance/score/task_type/{model_name}'
     domains_data = np.load(f'{data_path}/importance_score.npy')  # [num_layers, num_neurons, num_domains]
     
     num_layers, num_neurons, num_domains = domains_data.shape
