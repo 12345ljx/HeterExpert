@@ -1,0 +1,67 @@
+task_name=$1
+
+case $task_name in
+    'arc_easy')
+        epochs=2.5
+        batchsize=16
+        accsteps=2
+        dataset='arc_easy_template_enhance'
+        ;;
+    'arc_challenge')
+        epochs=3.0
+        batchsize=16
+        accsteps=2
+        dataset='arc_mix_template_enhance'
+        ;;
+    'hellaswag')
+        epochs=1.25
+        batchsize=16
+        accsteps=2
+        dataset='hellaswag_template'
+        ;;
+    'piqa')
+        epochs=3.0 
+        batchsize=8
+        accsteps=4
+        dataset='piqa_template'
+        ;;
+    'openbookqa')
+        epochs=2.5
+        batchsize=16
+        accsteps=2
+        dataset='openbookqa_template_enhance'
+        ;;
+    'winogrande')
+        epochs=1.25
+        batchsize=16
+        accsteps=2
+        dataset='winogrande_template'
+        ;;
+    'sciq')
+        epochs=2.0
+        batchsize=4
+        accsteps=8
+        dataset='sciq_template'
+        ;;
+    'mmlu_auxiliary_train')
+        epochs=0.5
+        batchsize=2
+        accsteps=16
+        dataset='mmlu_auxiliary_train_template'
+        ;;
+    'siqa')
+        epochs=1.5
+        batchsize=16
+        accsteps=2
+        dataset='siqa_template'
+        ;;
+    'alpaca_cleaned')
+        epochs=2.0
+        batchsize=4
+        accsteps=8
+        dataset='alpaca_cleaned_template'
+        ;;
+    *)
+        echo "Invalid task"
+        ;;
+esac
