@@ -1,0 +1,46 @@
+{
+  "builder_name": "json",
+  "citation": "",
+  "config_name": "default",
+  "dataset_name": "json",
+  "dataset_size": 11882976,
+  "description": "",
+  "download_checksums": {
+    "/usr/workdir/HeterExpert/data/sst2_template/train.json": {
+      "num_bytes": 13762473,
+      "checksum": null
+    }
+  },
+  "download_size": 13762473,
+  "features": {
+    "instruction": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "output": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "task": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "",
+  "license": "",
+  "size_in_bytes": 25645449,
+  "splits": {
+    "train": {
+      "name": "train",
+      "num_bytes": 11882976,
+      "num_examples": 67349,
+      "dataset_name": "json"
+    }
+  },
+  "version": {
+    "version_str": "0.0.0",
+    "major": 0,
+    "minor": 0,
+    "patch": 0
+  }
+}

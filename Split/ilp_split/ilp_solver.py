@@ -21,10 +21,10 @@ def gurobi_solver():
         
     
     # output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(module_stable,r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
-    output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(task_type,r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
+    output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
     os.makedirs(output_path, exist_ok=True)
     
-    domains_data = np.load(f'./Neuron_Importance/score/task_type/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
+    domains_data = np.load(f'./Neuron_Score/score/cluster/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')['domains_data_reduced']  # [num_layers, num_neurons(512), num_domains]
     for layer_idx in range(NUM_HIDDEN_LAYERS):
         score = domains_data[layer_idx]
         

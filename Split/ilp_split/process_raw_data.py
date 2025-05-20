@@ -6,16 +6,16 @@ NUM_HIDDEN_LAYERS = 16
 NUM_EXPERT = 8
 
 model_name = 'llama3.2-1b'
-function_name = f'domains(task_type,r4l2)'
+function_name = f'domains(r4l2)'
 
-output_dir = f'/usr/workdir/HeterExpert/Split/model_split/ilp/{model_name}/{function_name}/{NUM_EXPERT}'
+output_dir = f'./Split/model_split/ilp/{model_name}/{function_name}/{NUM_EXPERT}'
 os.makedirs(output_dir, exist_ok=True)
 
-data = np.load(f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')
+data = np.load(f'./Neuron_Score/score/cluster/{model_name}/importance_score_reduced_{NUM_MODULES}.npz')
 module2neurons = data['module2neurons'].astype(np.int32)  # [num_layers, num_modules, num_neurons]
 
 for layer_idx in range(NUM_HIDDEN_LAYERS):
-    placement = np.load(f'/usr/workdir/HeterExpert/Split/ilp_split/raw_data/{model_name}/{function_name}/n{NUM_EXPERT}m{NUM_MODULES}/neuron_grouping.layer{layer_idx}.npz')['placement']  # [num_neurons,]
+    placement = np.load(f'./Split/ilp_split/raw_data/{model_name}/{function_name}/n{NUM_EXPERT}m{NUM_MODULES}/neuron_grouping.layer{layer_idx}.npz')['placement']  # [num_neurons,]
 
     neuron_expert_pairs = []
     for expert_idx in range(NUM_EXPERT):
