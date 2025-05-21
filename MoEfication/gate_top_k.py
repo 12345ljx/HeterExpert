@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.distributions.normal import Normal
 
 class TopKGate(nn.Module):
     """A custom layer for selecting a sparse mixture of experts.

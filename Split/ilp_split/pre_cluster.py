@@ -32,10 +32,10 @@ def main():
     set_seed(random_seed)
 
     model_name = 'llama3.2-1b'
-    model_path = f'/usr/workdir/models/{model_name}'
+    model_path = f'./models/{model_name}'
     model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16)
 
-    data_path = f'./Neuron_Importance/score/cluster/{model_name}'
+    data_path = f'./Neuron_Score/score/cluster/{model_name}'
     domains_data = np.load(f'{data_path}/importance_score.npy')  # [num_layers, num_neurons, num_domains]
     
     num_layers, num_neurons, num_domains = domains_data.shape

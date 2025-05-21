@@ -1,24 +1,22 @@
 import os
 import numpy as np
 import random
-import sys
-sys.path.append('/usr/workdir/HeterExpert')
-from Neuron_Importance.process_score import read_score, preprocess_score
+from Neuron_Score.process_score import read_score
 
 def main():
     random_seed = 42
     random.seed(random_seed)
     
-    model_name = 'llama3.2-3b'
+    model_name = 'llama3.2-1b'
     function_name = 'domains'
     DOMAIN_NUM = 8
     NUM_EXPERT = 8
     dff_hidden_size = 8192
-    num_hidden_layers = 28
+    num_hidden_layers = 16
     size_expert = dff_hidden_size // NUM_EXPERT
     num_sharing = size_expert // 2
 
-    data_path = f'/usr/workdir/HeterExpert/Neuron_Importance/score/cluster/{model_name}'
+    data_path = f'./Neuron_Score/score/cluster/{model_name}'
     domains_data = read_score(num_hidden_layers, dff_hidden_size, DOMAIN_NUM, data_path)  # [num_layers, num_neurons, num_domains]
     domains_data = np.sum(domains_data, axis=2)  # [num_layers, num_neurons]
     
@@ -40,7 +38,7 @@ def main():
             for neuron in experts[i]:
                 neuron2experts[neuron].append(str(i))
         
-        output_path = f'/usr/workdir/HeterExpert/Split/model_split/moebert/{model_name}/{function_name}/{NUM_EXPERT}'
+        output_path = f'./Split/model_split/moebert/{model_name}/{function_name}/{NUM_EXPERT}'
         os.makedirs(output_path, exist_ok=True)
         with open(f'{output_path}/{layer_idx}.part.{NUM_EXPERT}', 'w') as f:
             for neuron in range(dff_hidden_size):

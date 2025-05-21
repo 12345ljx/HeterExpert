@@ -36,13 +36,6 @@ if TYPE_CHECKING:
 
     from ..hparams import FinetuningArguments, ModelArguments, MoEArguments
 
-import importlib
-import sys
-sys.path.append("/usr/workdir/MoEfication/models")
-sys.path.append("/usr/workdir/MoEfication/moefication")
-from ensemble_llama import LlamaForCausalLMEnsemble
-from ensemble import ensemble, post_process_config
-modeling_chatglm = importlib.import_module("relu-chatglm3-6b-ensemble.modeling_chatglm")
 
 logger = logging.get_logger(__name__)
 
@@ -167,16 +160,7 @@ def load_model(
             if model_args.train_from_scratch:
                 model = load_class.from_config(config, trust_remote_code=True)
             else:
-                if finetuning_args.training_parts == "mix_gate":
-                    post_process_config(config, moe_args.moeargs, moe_args.mixargs, 
-                                        lora_rank=finetuning_args.lora_rank, lora_alpha=finetuning_args.lora_alpha)
-                    if moe_args.model_name == "relu-llama2-7b-ensemble":
-                        model = LlamaForCausalLMEnsemble.from_pretrained(**init_kwargs)
-                    elif moe_args.model_name == "relu-chatglm3-6b-ensemble":
-                        model = modeling_chatglm.ChatGLMForConditionalGenerationEnsemble.from_pretrained(**init_kwargs)
-                    
-                    ensemble(model, moe_args.model_name, moe_args.function_name, moe_args.moeargs, moe_args.mixargs)
-                elif model_args.model_name_or_path.endswith("pytorch_model.bin"):
+                if model_args.model_name_or_path.endswith("pytorch_model.bin"):
                     model = torch.load(model_args.model_name_or_path, map_location='cpu')['model']
                 else:
                     model = load_class.from_pretrained(**init_kwargs)

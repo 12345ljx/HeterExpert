@@ -3,8 +3,8 @@ import random
 from functools import partial
 from datasets.io.json import JsonDatasetWriter
 
-from patterns import PATTERNS_OPTIONS
-from prompts_tools import load_train_dataset, update_example
+from Cluster.patterns import PATTERNS_OPTIONS
+from Cluster.prompts_tools import load_train_dataset, update_example
 
 def main():
     random.seed(42)

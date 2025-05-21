@@ -3,10 +3,10 @@ import torch
 import torch.nn as nn
 from transformers.models.llama.modeling_llama import LlamaMLP
 
-from gate_top_k import TopKGate
-from gate_top_p import TopPGate
-from gate_dynk_max import DynkMaxGate
-from moe_triton_impls import MoeFirstLayerGLUHeteroImplementation, MoeSecondLayerMergingHeteroImplementation
+from MoEfication.gate_top_k import TopKGate
+from MoEfication.gate_top_p import TopPGate
+from MoEfication.gate_dynk_max import DynkMaxGate
+from MoEfication.moe_triton_impls import MoeFirstLayerGLUHeteroImplementation, MoeSecondLayerMergingHeteroImplementation
 
 def get_act_name(act_fn):
     if isinstance(act_fn, nn.SiLU):

@@ -68,7 +68,7 @@ def run_sft(
     training_args.generation_num_beams = data_args.eval_num_beams or training_args.generation_num_beams
     
     model_name, task_name = moe_args.model_name, moe_args.task_name
-    base_path = f"/usr/workdir/HeterExpert/models/parts/{finetuning_args.training_parts}"
+    base_path = f"./models/parts/{finetuning_args.training_parts}"
     if finetuning_args.training_parts == "gate":
         checkpoints_path = f"{base_path}/{model_name}:{task_name}(seed={training_args.seed},lr={training_args.learning_rate})"
     elif "lora" in finetuning_args.training_parts:

@@ -11,8 +11,8 @@ top_k() {
 
     for task_name in 'arc_easy' 'arc_challenge' 'piqa' 'openbookqa' 'winogrande' 'sciq' 'siqa'
     do
-        source ./task_setting.sh $task_name
-        CUDA_VISIBLE_DEVICES=$device python ../src/train.py \
+        source ./LLaMA-Factory/scripts/task_setting.sh $task_name
+        CUDA_VISIBLE_DEVICES=$device python ./LLaMA-Factory/src/train.py \
             --seed 42 \
             --stage sft \
             --do_train \

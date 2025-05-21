@@ -2,7 +2,7 @@ import torch
 import triton
 from triton import language as tl
 
-from moe_triton_utils import row_major, column_major, grouped, leaky_relu, relu, tanh, gelu, silu, config_grid
+from MoEfication.moe_triton_utils import row_major, column_major, grouped, leaky_relu, relu, tanh, gelu, silu, config_grid
             
 
 class MoeFirstLayerGLUHeteroImplementation(torch.autograd.Function):

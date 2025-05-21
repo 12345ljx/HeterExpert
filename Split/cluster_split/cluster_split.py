@@ -9,7 +9,7 @@ from sklearn.preprocessing import normalize
 
 def get_cluster_result(model_name, layer, n_clusters, size, X, random_seed, write_file=False):
     file_name = f'{model_name}_{n_clusters}_layer{layer}.npy'
-    output_path = os.path.join(f'/usr/workdir/HeterExpert/Split/ilp_split/cluster_cache/{model_name}', file_name)
+    output_path = os.path.join(f'./Split/ilp_split/cluster_cache/{model_name}', file_name)
     if os.path.exists(output_path) and not write_file:
         clusters = np.load(output_path)
     else:
@@ -25,8 +25,8 @@ def main(num_expert):
     random_seed = 42
     set_seed(random_seed)
 
-    model_name = 'SparseQwen2-7B'
-    model_path = f'/usr/workdir/models/{model_name}'
+    model_name = 'llama3.2-1b'
+    model_path = f'./models/{model_name}'
     model = AutoModelForCausalLM.from_pretrained(model_path, torch_dtype=torch.float16, trust_remote_code=True)
     num_layers = model.config.num_hidden_layers
     num_neurons = model.config.intermediate_size
@@ -45,7 +45,7 @@ def main(num_expert):
 
         neuron_expert_pairs = [(neuron_idx, clusters[neuron_idx]) for neuron_idx in range(num_neurons)]
         
-        output_path = f'/usr/workdir/HeterExpert/Split/model_split/cluster/{model_name}/{num_expert}'
+        output_path = f'./Split/model_split/cluster/{model_name}/{num_expert}'
         os.makedirs(output_path, exist_ok=True)
         with open(f'{output_path}/{layer_idx}.part.{num_expert}', 'w') as f:
             for neuron, expert in neuron_expert_pairs:

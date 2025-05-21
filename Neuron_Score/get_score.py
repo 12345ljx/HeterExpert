@@ -2,7 +2,6 @@ import os
 # os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 os.environ["WANDB_DISABLED"] = 'true'
 from enum import Enum
-from pathlib import Path
 import torch
 from datasets import load_from_disk
 from transformers import (
@@ -15,7 +14,6 @@ from transformers import (
 
 import sys
 from models.importance_llama import LlamaForCausalLM
-from models.importance_qwen2 import Qwen2ForCausalLM
 
 from data_preprocess import DataProcessor, IGNORE_INDEX
 from importance_trainer import CustomSeq2SeqTrainer
@@ -52,7 +50,7 @@ def main(model_name: str, task_name: str, domain_type: DomainType):
     random_seed = 42
     set_seed(random_seed)
     
-    model_path = f'/usr/workdir/models/{model_name}'
+    model_path = f'./models/{model_name}'
     if 'llama' in model_name:
         model = LlamaForCausalLM.from_pretrained(model_path, torch_dtype=torch.bfloat16)
         if 'llama3' in model_name:

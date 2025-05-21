@@ -44,13 +44,10 @@ from packaging import version
 from transformers.utils import logging, WEIGHTS_NAME, SAFE_WEIGHTS_NAME
 from transformers.trainer_pt_utils import remove_dummy_checkpoint
 
-import sys
-sys.path.append('/usr/workdir/MoEfication/moefication')
-from gate_dselect_k import DSelectKGate
-from gate_top_k import TopKGate
-from gate_top_p import TopPGate
-from gate_dynk_max import DynkMaxGate
-from gate_mlp import MLPGate
+
+from MoEfication.gate_top_k import TopKGate
+from MoEfication.gate_top_p import TopPGate
+from MoEfication.gate_dynk_max import DynkMaxGate
 
 logger = logging.get_logger(__name__)
 
@@ -106,9 +103,9 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
                     # print(module_name, type(module))
                     if isinstance(module, ModulesToSaveWrapper):
                         inter_module = module.modules_to_save.default
-                        if isinstance(inter_module, (DSelectKGate, TopKGate, TopPGate, DynkMaxGate, MLPGate)):  # XXX
+                        if isinstance(inter_module, (TopKGate, TopPGate, DynkMaxGate)):  # XXX
                             loss_value += inter_module.reg_loss
-                    if isinstance(module, (DSelectKGate, TopKGate, TopPGate, DynkMaxGate, MLPGate)):
+                    if isinstance(module, (TopKGate, TopPGate, DynkMaxGate)):
                         loss_value += module.reg_loss
         
         if is_transformers_version_equal_to_4_46() and not getattr(self, "model_accepts_loss_kwargs", False):
@@ -228,9 +225,7 @@ class CustomSeq2SeqTrainer(Seq2SeqTrainer):
             state_dict = self.model.state_dict()
             custom_state_dict = {}
             for k, v in state_dict.items():
-                if 'num_calls' in k:
-                    continue
-                if 'lora' in k or '.gate.' in k or 'classification_head' in k or 'mix_gate.z_logits' in k or 'mix_gate.w_logits' in k:
+                if 'lora' in k or '.gate.' in k:
                     custom_state_dict[k] = v
             self._save(output_dir, state_dict=custom_state_dict)
 

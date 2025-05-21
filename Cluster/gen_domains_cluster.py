@@ -25,12 +25,12 @@ def load_embedding_model():
     return embedding_model
 
 def get_tasks_embeddings(sample_count, random_seed, matryoshka_dim=None, write_file=False):
-    cache_path = './data/embeddings.npz'
+    cache_path = './Cluster/instruct_data/embeddings.npz'
     if os.path.exists(cache_path) and not write_file:
         load_data = np.load(cache_path)
         return load_data['embeddings'], load_data['labels']
     
-    directory = Path('./data')
+    directory = Path('./Cluster/instruct_data')
     subdirs = [d for d in directory.iterdir() if d.is_dir()]
     embedding_model = load_embedding_model()
     embeddings_all, labels_all = None, None

@@ -1,28 +1,28 @@
 import random
+from datasets import load_from_disk, load_dataset, concatenate_datasets
 from lm_eval.tasks.hellaswag.utils import preprocess as HellaSwag_preprocess
 
-from patterns import PATTERNS, PATTERNS_OPTIONS, PATTERNS_NO_OPTIONS
-from datasets import load_from_disk, load_dataset, concatenate_datasets
+from Cluster.patterns import PATTERNS, PATTERNS_OPTIONS, PATTERNS_NO_OPTIONS
 
 def get_data_path(task_name):
     if task_name == "arc_easy":
-        raw_data_path = "./Cluster/raw_data/arc/ARC-Easy"
+        raw_data_path = "./data/arc/ARC-Easy"
     elif task_name == "arc_challenge":
-        raw_data_path = "./Cluster/raw_data/arc/ARC-Challenge"
+        raw_data_path = "./data/arc/ARC-Challenge"
     elif task_name in ["boolq", "hellaswag", "openbookqa", "winogrande", "piqa", "race", "anli", "siqa", "gsm8k", "logiqa", "sciq", "CodeAlpaca20K"
                        , "alpaca_cleaned"]:
-        raw_data_path = f"./Cluster/raw_data/{task_name}"
+        raw_data_path = f"./data/{task_name}"
     elif task_name in ["rte", "mrpc", "cola", "sst2", "qnli", "qqp", "mnli"]:
-        raw_data_path = f"./Cluster/raw_data/glue/{task_name}"
+        raw_data_path = f"./data/glue/{task_name}"
     elif task_name in ["copa", "multirc", "record", "cb", "wic", "wsc"]:
-        raw_data_path = f"./Cluster/raw_data/superglue/{task_name}"
+        raw_data_path = f"./data/superglue/{task_name}"
     elif task_name == "triviaqa":
-        raw_data_path = "./Cluster/raw_data/trivia_qa"
+        raw_data_path = "./data/trivia_qa"
     elif task_name in ["bigbench_abstract_narrative_understanding", "bigbench_goal_step_wikihow", "bigbench_social_iqa", "bigbench_timedial"]:
-        raw_data_path = f"./Cluster/raw_data/bigbench/{task_name.replace('bigbench_', '')}"
+        raw_data_path = f"./data/bigbench/{task_name.replace('bigbench_', '')}"
     elif task_name in ["mmlu_high_school_government_and_politics", "mmlu_high_school_world_history", "mmlu_professional_law",
                        "mmlu_us_foreign_policy", "mmlu_business_ethics", "mmlu_high_school_computer_science", "mmlu_auxiliary_train"]:
-        raw_data_path = f"./Cluster/raw_data/mmlu/{task_name.replace('mmlu_', '')}"
+        raw_data_path = f"./data/mmlu/{task_name.replace('mmlu_', '')}"
     else:
         raise NotImplementedError
     

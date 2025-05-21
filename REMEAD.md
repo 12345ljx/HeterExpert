@@ -15,10 +15,20 @@ pip install -r requirements.txt
 
 >?  Describe how to set up the environment, e.g. pip/conda/docker commands, download datasets, etc...
 
-## 得到专家
+## 准备阶段
+改变当前路径：
+```shell
+cd ./HeterExpert
+```
+从huggingface官网下载所需的模型和数据：
+```python
+python ./datasets/data_download.py
+python ./models/model_download.py
+```
 
+## 得到专家
 ### 准备数据
-从huggingface下载原始数据，并处理原始数据得到指令数据
+处理原始数据得到指令数据
 ```python
 python ./Cluster/instance_prompt.py
 ```

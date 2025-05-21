@@ -1,20 +1,12 @@
 
 import os
+from typing import Literal, Optional, Any
 import torch
-import importlib
-import random
 import numpy as np
 from dataclasses import dataclass, asdict
-from typing import Literal, Optional, Any
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
-from transformers.models.t5.modeling_t5 import T5PreTrainedModel, T5DenseActDense
-from transformers.models.llama.modeling_llama import LlamaPreTrainedModel, LlamaMLP
-from functools import partial
-from peft.utils.other import ModulesToSaveWrapper
 from transformers.utils import is_torch_cuda_available
-from transformers.modeling_utils import load_state_dict
 
-from new_ffn_llama import moe_ffn_llama
+from MoEfication.new_ffn_llama import moe_ffn_llama
 
 
 def get_current_device() -> torch.device:
@@ -26,11 +18,11 @@ def get_current_device() -> torch.device:
 
 @dataclass
 class MoEArgs:
-    model_name: str = None
-    function_name: str = None
+    model_name: Optional[str] = None
+    function_name: Optional[str] = None
     split_mode: Literal['random', 'random_hetero', 'co_act', 'co_act(average)', 'ilp', 'ilp(non_log)', 'cluster', 'moebert', 'moebert_multitask'] = 'co_act'
-    gate_mode: Literal['dselect_k', 'random', 'top_k', 'top_p', 'dynk_max', 'ground_truth', 'mlp'] = None
-    gate_backend: Literal['mask', 'index', 'triton'] = None
+    gate_mode: Optional[Literal['dselect_k', 'random', 'top_k', 'top_p', 'dynk_max', 'ground_truth', 'mlp']] = None
+    gate_backend: Optional[Literal['mask', 'index', 'triton']] = None
     static: bool = True
     begin_layer: int = 4
     end_layer: int = -1
@@ -144,10 +136,9 @@ class MoEArgs:
                 else:
                     for e in expert_idx.split(','):
                         labels[int(e)].append(node_idx)
-        for i in range(num_expert):
-            labels[i] = np.array(labels[i])
             
-        return labels
+        labels_array = [np.array(labels[i]) for i in range(num_expert)]
+        return labels_array
     
     def get_labels_dict(self) -> dict[int, np.ndarray]:
         labels = {}

@@ -1,13 +1,10 @@
+import random, os
 import numpy as np
 from transformers import AutoConfig
-import time
 from collections import Counter, defaultdict
-import random, os
 
 def get_model_info(model_name):
-    model_path = f"/usr/workdir/MoEfication/models/{model_name}"
-    if not os.path.exists(model_path):
-        model_path = f"/usr/workdir/models/{model_name}"
+    model_path = f"./models/{model_name}"
         
     if 'llama' in model_name:
         config = AutoConfig.from_pretrained(model_path)
@@ -88,7 +85,7 @@ def main():
     np.random.seed(random_seed)
     random.seed(random_seed)
     
-    model_name = "llama3.2-1b-instruct"
+    model_name = "llama3.2-1b"
     expert_num = 8
     
     dff_hidden_size, layers_number = get_model_info(model_name)
@@ -97,9 +94,9 @@ def main():
     assert dff_hidden_size % expert_num == 0
     average_num = dff_hidden_size // expert_num
     averate_correction(experts_split, average_num)
-    check_range(experts_split, average_num, average_num) 
-    
-    output_path = f"/usr/workdir/MoEfication/moefication/get_hidden/model_split/random/{model_name}/{expert_num}"
+    check_range(experts_split, average_num, average_num)
+
+    output_path = f"./Split/model_split/random/{model_name}/{expert_num}"
     write_result(output_path, experts_split, expert_num)
     
 if __name__ == "__main__":

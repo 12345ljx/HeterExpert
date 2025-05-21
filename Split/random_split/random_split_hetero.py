@@ -3,13 +3,10 @@ import random
 from collections import defaultdict
 
 from random_split_homo import get_model_info, get_random_split, check_range, write_result
-import sys
-sys.path.append('/usr/workdir/MoEfication/moefication')
-from get_labels import read_labels
-from moefication import MoEArgs
+from MoEfication.moefication import MoEArgs
 
 def get_ilp_expert_size(model_name, layers_number, expert_num):
-    ilp_base_path = f'/usr/workdir/HeterExpert/Split/model_split/ilp/{model_name}/domains(r4l2)/{expert_num}'
+    ilp_base_path = f'./Split/model_split/ilp/{model_name}/domains(r4l2)/{expert_num}'
     experts_size = {}
     for layer_idx in range(layers_number):
         labels = MoEArgs.read_labels(f'{ilp_base_path}/{layer_idx}.part.{expert_num}')
@@ -48,7 +45,7 @@ def main():
     np.random.seed(random_seed)
     random.seed(random_seed)
     
-    model_name = "llama3.2-3b"
+    model_name = "llama3.2-1b"
     expert_num = 8
     
     dff_hidden_size, layers_number = get_model_info(model_name)
@@ -61,7 +58,7 @@ def main():
     average_num = dff_hidden_size // expert_num
     check_range(experts_split, average_num * 0.5, average_num * 2) 
     
-    output_path = f"/usr/workdir/HeterExpert/Split/model_split/random_hetero/{model_name}/{expert_num}"
+    output_path = f"./Split/model_split/random_hetero/{model_name}/{expert_num}"
     write_result(output_path, experts_split, expert_num)
     
 if __name__ == '__main__':

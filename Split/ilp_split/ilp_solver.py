@@ -20,7 +20,6 @@ def gurobi_solver():
     print(f"model: {model_name}, num_expert: {NUM_EXPERT}, R: {R}, l: {l}")
         
     
-    # output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(module_stable,r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
     output_path = f'./Split/ilp_split/raw_data/{model_name}/domains(r{R}l{l})/n{NUM_EXPERT}m{NUM_MODULES}'
     os.makedirs(output_path, exist_ok=True)
     
