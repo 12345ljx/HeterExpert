@@ -18,10 +18,10 @@ top_k() {
             --do_train \
             --do_eval \
             --model_name llama3.2-1b \
-            --model_name_or_path /usr/workdir/models/llama3.2-1b \
+            --model_name_or_path ./models/llama3.2-1b \
             --task_name $task_name \
             --dataset $dataset \
-            --dataset_dir /usr/workdir/LLaMA-Factory/data/harness \
+            --dataset_dir ./LLaMA-Factory/data/harness \
             --val_size 0.05 \
             --function_name $function_name \
             --moeficate \
@@ -40,7 +40,7 @@ top_k() {
             --additional_target w_logits,weight_noise,gate_layer1,gate_layer2 \
             --lora_rank 8 \
             --lora_dropout 0.05 \
-            --output_dir /usr/workdir/MoEfication/moefication/trainer \
+            --output_dir ./LLaMA-Factory/results \
             --overwrite_output_dir \
             --per_device_train_batch_size $batchsize \
             --gradient_accumulation_steps $accsteps \

@@ -70,7 +70,7 @@ def wandb_init(model_args, moe_args, data_args, training_args, finetuning_args, 
     
     rand_gen = np.random.RandomState(int(time.time()))
     wandb.init(
-        entity="jxing",
+        entity="xxx",
         project="HeterExpert",
         name=run_name + f'({rand_gen.randint(1,1001)})',
         tags=[moe_args.model_name, moe_args.task_name],

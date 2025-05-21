@@ -28,7 +28,7 @@ def find_last_checkpoint(root_dir: str) -> str:
     return gate_path
 
 def get_gate_path_smart(extra_elements: Optional[list] = None, **kwargs):
-    base_path = "/usr/workdir/HeterExpert/models/parts/gate,lora"
+    base_path = "./models/parts/gate,lora"
     
     if kwargs['split_mode'] in ['cluster', 'random', 'random_hetero']:
         split_mode = kwargs['split_mode']

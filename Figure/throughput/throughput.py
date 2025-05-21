@@ -65,7 +65,7 @@ def plot(x, y1, y2, y3, y4, xlabel, ylabel):
         frameon=True
     )
 
-    plt.savefig(f"/usr/workdir/HeterExpert/Figure/throughput/{xlabel}.pdf", format='pdf')
+    plt.savefig(f"./Figure/throughput/{xlabel}.pdf", format='pdf')
     plt.close()
     
     

@@ -50,7 +50,7 @@ def run_pt(
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
     model_name, task_name = moe_args.model_name, moe_args.task_name
-    base_path = f"/usr/workdir/HeterExpert/models/parts/{finetuning_args.training_parts}"
+    base_path = f"./models/parts/{finetuning_args.training_parts}"
     lora_target = "".join([s[0] for s in finetuning_args.lora_target])
     checkpoints_path = f"{base_path}/{lora_target}/{model_name}:{task_name}(seed={training_args.seed},lr={training_args.learning_rate})"
     checkpoints_path = os.path.join(checkpoints_path, str(int(time.time())))

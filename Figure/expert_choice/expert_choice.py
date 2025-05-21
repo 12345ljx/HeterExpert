@@ -40,6 +40,6 @@ ax.set_xlabel('Experts', fontsize=20)
 ax.set_ylabel('Domains', fontsize=20)
 
 plt.gca().set_aspect('equal', adjustable='box')
-plt.savefig(f'/usr/workdir/HeterExpert/Figure/expert_choice/expert_choice1.png', bbox_inches='tight', dpi=300)
-# plt.savefig(f'/usr/workdir/HeterExpert/Figure/expert_choice/expert_choice1.pdf', bbox_inches='tight', dpi=300)
+plt.savefig(f'./Figure/expert_choice/expert_choice1.png', bbox_inches='tight', dpi=300)
+# plt.savefig(f'./Figure/expert_choice/expert_choice1.pdf', bbox_inches='tight', dpi=300)
 plt.close()

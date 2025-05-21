@@ -92,29 +92,24 @@ class MoEArgs:
         function_name = self.function_name
         split_mode = self.split_mode
         
-        if 'co_act' in split_mode:
-            base_path = '/usr/workdir/MoEfication/moefication/get_hidden/model_split/co_activations'
-            if 'average' in split_mode:
-                base_path = os.path.join(base_path, 'averaged')
-            base_path = os.path.join(base_path, f'{model_name}/{function_name}')
-        elif split_mode == 'ilp':
-            base_path = '/usr/workdir/HeterExpert/Split/model_split/ilp'
+        if split_mode == 'ilp':
+            base_path = './Split/model_split/ilp'
             base_path = os.path.join(base_path, f'{model_name}/{function_name}')
         elif split_mode == 'ilp(non_log)':
-            base_path = '/usr/workdir/HeterExpert/Split/model_split/ilp(non_log)'
+            base_path = './Split/model_split/ilp(non_log)'
             base_path = os.path.join(base_path, f'{model_name}/{function_name}')
         elif split_mode == 'random':
-            base_path = f'/usr/workdir/MoEfication/moefication/get_hidden/model_split/random/{model_name}'
+            base_path = f'./Split/model_split/random/{model_name}'
         elif split_mode == 'random_hetero':
-            base_path = f'/usr/workdir/HeterExpert/Split/model_split/random_hetero/{model_name}'
+            base_path = f'./Split/model_split/random_hetero/{model_name}'
         elif split_mode == 'moebert':
-            base_path = '/usr/workdir/HeterExpert/Split/model_split/moebert'
+            base_path = './Split/model_split/moebert'
             base_path = os.path.join(base_path, f'{model_name}/{function_name}')
         elif split_mode == 'moebert_multitask':
-            base_path = '/usr/workdir/HeterExpert/Split/model_split/moebert_multitask'
+            base_path = './Split/model_split/moebert_multitask'
             base_path = os.path.join(base_path, f'{model_name}/{function_name}')
         elif split_mode == 'cluster':
-            base_path = f'/usr/workdir/HeterExpert/Split/model_split/cluster/{model_name}'
+            base_path = f'./Split/model_split/cluster/{model_name}'
         
         print("load labels from:", base_path)
         self.base_path = base_path

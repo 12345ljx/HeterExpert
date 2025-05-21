@@ -60,5 +60,5 @@ plt.text(0.47, 0.96, 'Expert usage of HEMoE with\n96.5% original accuracy',
 plt.xlim(0.6, 6.8)
 plt.ylim(0.03, 0.38)
 
-plt.savefig(f"/usr/workdir/HeterExpert/Figure/latency/latency.pdf", format='pdf')
+plt.savefig(f"./Figure/latency/latency.pdf", format='pdf')
 plt.close()
