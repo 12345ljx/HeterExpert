@@ -60,20 +60,17 @@ python ./Split/ilp_split/process_raw_data.py
 ```
 
 MoEfication partitioning:
-
 ```shell
 ./Split/cluster_split.sh
 ```
 
 MoEBERT partitioning:
-
-```
+```shell
 python ./Split/moebert_split/split.py
 ```
 
 Random partitioning:
-
-```
+```shell
 python ./Split/random_split/random_split_homo.py
 python ./Split/random_split/random_split_hetero.py
 ```
