@@ -168,4 +168,7 @@ config/
 saves/
 output/
 wandb/
-data/
+data/*
+!data/harness/
+data/harness/*
+!data/harness/*.py
